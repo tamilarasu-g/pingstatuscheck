@@ -17,7 +17,7 @@ then
     exit 1
 fi
 
-# Read through the servers.txt file and ping the host
+# Read through the servers.csv file and ping the host
 
 while IFS="@" read -r host
 do
