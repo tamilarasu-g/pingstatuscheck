@@ -1,13 +1,37 @@
 #!/bin/bash
 
-# Check if the logfile.txt is present or not
-if [[ ! -f "logfile.txt" ]]
-then
-    touch logfile.txt
-fi
-
 # Host details
 HOSTS_FILE="hosts.csv"
+
+#INFORMATION
+INFO="info.txt"
+
+#LOGFILE
+LOG="log.txt"
+
+# Credentials for mail
+sender="your-email@gmail.com"
+receiver="your-email@gmail.com"
+gapp="your-app-password from google"
+sub="Ping Status"
+
+# Important parameters for ping command
+
+WAIT_TIME=1
+COUNT=3
+
+# Check if the info.txt is present or not
+if [[ ! -f "${INFO}" ]]
+then
+    touch ${INFO}
+fi
+
+# Check if above command succeded. That is if the file was created successfully
+if [[ ${?} -ne 0 ]]
+then
+    echo "Could not create ${INFO}."
+    exit 1
+fi
 
 # Check if hosts.csv is present or not
 
@@ -21,23 +45,19 @@ fi
 
 while IFS="@" read -r host
 do
-    ping -c 1 -W 1 ${host} &>/dev/null
+    ping -c $COUNT -W $WAIT_TIME ${host} &>${LOG}
     if [[ "${?}" -eq 0`` ]]
     then
-        echo "Host ${host} is alive" >> logfile.txt
+        echo "Host ${host} is alive" >> ${INFO}
     else
-        echo "Host ${host} is not alive" >> logfile.txt
+        echo "Host ${host} is not alive" >> ${INFO}
     fi
 done < "${HOSTS_FILE}"
 
+# Body of the mail
+body=$(cat ${INFO})
 
 # Send mail
-
-sender="your-email@gmail.com"
-receiver="your-email@gmail.com"
-gapp="your-app-password from google"
-sub="Test mail from bash script"
-body=$(cat logfile.txt)
 
 curl -s --url 'smtps://smtp.gmail.com:465' --ssl-reqd \
     --mail-from $sender \
@@ -57,5 +77,5 @@ else
     echo "Mail has not been sent due to an error !!!"
 fi
 
-# Remove the logfile.txt after sending the mail
-rm logfile.txt
+# Remove the info.txt after sending the mail
+rm ${INFO}
